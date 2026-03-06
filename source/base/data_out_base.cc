@@ -8307,6 +8307,9 @@ namespace
 #    endif
 #  endif
 
+    const unsigned int Four_GB = 4L * 1073741824L - 1L; // 4GB in bytes
+    hsize_t node_ds_chunk_dim[2], cell_ds_chunk_dim[2];
+
     if (write_mesh_file)
       {
         // Overwrite any existing files (change this to an option?)
@@ -8338,9 +8341,14 @@ namespace
 #  else
         node_dataset_id = H5Pcreate(H5P_DATASET_CREATE);
 #    ifdef DEAL_II_WITH_ZLIB
+        node_ds_chunk_dim[0]  = node_ds_dim[0];
+        node_ds_chunk_dim[1] = node_ds_dim[1];
+        if(node_ds_dim[0] * node_ds_dim[1] * 8 > Four_GB) // assuming double
+          node_ds_chunk_dim[0] = std::floor(Four_GB / (8 * node_ds_chunk_dim[1]));
+
         H5Pset_deflate(node_dataset_id,
                        get_zlib_compression_level(flags.compression_level));
-        H5Pset_chunk(node_dataset_id, 2, node_ds_dim);
+        H5Pset_chunk(node_dataset_id, 2, node_ds_chunk_dim);
 #    endif
         node_dataset = H5Dcreate(h5_mesh_file_id,
                                  "nodes",
@@ -8361,9 +8369,14 @@ namespace
 #  else
         node_dataset_id = H5Pcreate(H5P_DATASET_CREATE);
 #    ifdef DEAL_II_WITH_ZLIB
+        cell_ds_chunk_dim[0] = cell_ds_dim[0];
+        cell_ds_chunk_dim[1] = cell_ds_dim[1];
+        if(cell_ds_dim[0] * cell_ds_dim[1] * 8 > Four_GB) // assuming double
+          cell_ds_chunk_dim[0] = std::floor(Four_GB / (8 * cell_ds_chunk_dim[1]));
+
         H5Pset_deflate(node_dataset_id,
                        get_zlib_compression_level(flags.compression_level));
-        H5Pset_chunk(node_dataset_id, 2, cell_ds_dim);
+        H5Pset_chunk(node_dataset_id, 2, cell_ds_chunk_dim);
 #    endif
         cell_dataset = H5Dcreate(h5_mesh_file_id,
                                  "cells",
@@ -8503,9 +8516,14 @@ namespace
 #  else
         node_dataset_id = H5Pcreate(H5P_DATASET_CREATE);
 #    ifdef DEAL_II_WITH_ZLIB
+        node_ds_chunk_dim[0]  = node_ds_dim[0];
+        node_ds_chunk_dim[1] = node_ds_dim[1];
+        if(node_ds_dim[0] * node_ds_dim[1] * 8 > Four_GB) // assuming double
+          node_ds_chunk_dim[0] = std::floor(Four_GB / (8 * node_ds_chunk_dim[1]));
+
         H5Pset_deflate(node_dataset_id,
                        get_zlib_compression_level(flags.compression_level));
-        H5Pset_chunk(node_dataset_id, 2, node_ds_dim);
+        H5Pset_chunk(node_dataset_id, 2, node_ds_chunk_dim);
 #    endif
         pt_data_dataset = H5Dcreate(h5_solution_file_id,
                                     vector_name.c_str(),
